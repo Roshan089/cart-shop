@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>YouTube Clone</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+
+    #videoPlayer {
+      width: 640px;
+      height: 360px;
+      background-color: #000;
+      color: #fff;
+      padding: 10px;
+    }
+
+    #videoList {
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    .videoItem {
+      margin-bottom: 10px;
+      display: flex;
+      cursor: pointer;
+    }
+
+    .videoItem img {
+      width: 120px;
+      height: 90px;
+      margin-right: 10px;
+    }
+
+    .videoInfo {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .videoInfo h3 {
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .videoInfo p {
+      margin: 0;
+      font-size: 12px;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <div id="videoPlayer">
+    <div id="player"></div>
+    <h1 id="videoTitle"></h1>
+    <p id="videoDescription"></p>
+  </div>
+
+  <div id="videoList"></div>
+
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <script>
+    // Load the YouTube IFrame Player API asynchronously
+    var tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    var firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+    // Replace with your YouTube Data API key
+    var apiKey = 'YOUR_YOUTUBE_API_KEY';
+
+    // Fetch video details from YouTube Data API
+    function fetchVideoDetails(videoId) {
+      var request = new XMLHttpRequest();
+      request.open('GET', 'https://www.googleapis.com/youtube/v3/videos?part=snippet&id=' + videoId + '&key=' + apiKey, true);
+      request.onload = function () {
+        if (request.status >= 200 && request.status < 400) {
+          var response = JSON.parse(request.responseText);
+          var videoTitle = response.items[0].snippet.title;
+          var videoDescription = response.items[0].snippet.description;
+          playVideo(videoId, videoTitle, videoDescription);
+        }
+      };
+      request.send();
+    }
+
+    // Initialize the YouTube player
+    var player;
+    function onYouTubeIframeAPIReady() {
+      player = new YT.Player('player', {
+        height: '360',
+        width: '640',
+        playerVars: {
+          'autoplay': 0,
+          'controls': 1,
+          'rel': 0,
+          'showinfo': 0,
+          'modestbranding': 1
+        },
+        events: {
+          'onReady': onPlayerReady
+        }
+      });
+    }
+
+    function onPlayerReady(event) {
+      // Player is ready
+    }
+
+    // Play the video in the YouTube player
+    function playVideo(videoId, videoTitle, videoDescription) {
+      player.loadVideoById(videoId);
+      document.getElementById('videoTitle').textContent = videoTitle;
+      document.getElementById('videoDescription').textContent = videoDescription;
+    }
+
+    // Add videos to the side interface
+    function addVideo(videoId, thumbnail, title, description) {
+      var videoList = document.getElementById('videoList');
+      var videoItem = document.createElement('div');
+      videoItem.className = 'videoItem';
+      videoItem.onclick = function () {
+        fetchVideoDetails(videoId);
+      };
+
+      var thumbnailImg = document.createElement('img');
+      thumbnailImg.src = thumbnail;
+      thumbnailImg.alt = title;
+
+      var videoInfo = document.createElement('div');
+      videoInfo.className = 'videoInfo';
+
+      var videoTitle = document.createElement('h3');
+      videoTitle.textContent = title;
+
+      var videoDescription = document.createElement('p');
+      videoDescription.textContent = description;
+
+      videoInfo.appendChild(videoTitle);
+      videoInfo.appendChild(videoDescription);
+
+      videoItem.appendChild(thumbnailImg);
+      videoItem.appendChild(videoInfo);
+
+      videoList.appendChild(videoItem);
+    }
+
+    // Add your videos here
+    addVideo('VIDEO_ID_1', 'THUMBNAIL_URL_1', 'Video 1', 'Description of Video 1');
+    addVideo('VIDEO_ID_2', 'THUMBNAIL_URL_2', 'Video 2', 'Description of Video 2');
+    addVideo('VIDEO_ID_3', 'THUMBNAIL_URL_3', 'Video 3', 'Description of Video 3');
+  </script>
+</body>
+</html>
